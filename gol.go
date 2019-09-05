@@ -1,4 +1,4 @@
-package gol
+package alexv99/gol
 
 import (
 	"fmt"
