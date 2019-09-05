@@ -1,5 +1,5 @@
 # gol
-Logging utility for deal.com go services with a few goodies:
+Logging utility with a few goodies:
 <ul>
 <li/> Asynchronous (requests don't do disk IOs for logging)
 <li/> Log rotation (gol will create new log file once a configurable size is reached)
