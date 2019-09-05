@@ -1,4 +1,4 @@
-package github.com/alexv99/gol
+package gol
 
 import (
 	"io/ioutil"
