@@ -15,7 +15,7 @@ import "github.com/deal/gol"
 
 gol.SetAppLogFolder("/path/to/log/folder")     // Log folder for service log (default /var/log)
 gol.SetPublicLogFolder("/path/to/log/folder")  // Log folder for public access log (default /var/log)
-gol.SetPublicLogMaxSize(200)  // Maximum size of a log file in MB
+gol.SetPublicLogMaxSize(200)  // Maximum size of a log file in KB
 gol.SetPublicLogMaxAge(20)    // Max age of a file before it's being purged in days (default 10 days)
 gol.LogToStdout(true)         // Also log to stdout  (default true)
 gol.ShowLineNumbers(false)    // Show file name and line number (default false)
