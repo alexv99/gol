@@ -1,3 +1,27 @@
+//
+// MIT License
+//
+// Copyright (c) 2017 Alex Vauthey
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
 package gol
 
 import (
@@ -33,7 +57,7 @@ var running bool = false
 
 var aLoglevel int = INFO           // Log level
 var aLogFolder string = "/var/log" // Path to gol file
-var aLogMaxSize int64 = 1024        // in MB
+var aLogMaxSize int64 = 1024       // in MB
 var aLogMaxAge int = 10            // File older than MaxAge days will be deleted automatically
 var aLogSuffix int = 0
 var aLogName = "application.log"
@@ -93,7 +117,7 @@ func Start() error {
 	running = true
 
 	for i := 0; i < NUM_LOGGING_ROUTINES; i++ {
-		go appLogWrite(appLogChan) // App log write routine
+		go appLogWrite(appLogChan)             // App log write routine
 		go publicAccessLogWrite(publicLogChan) // Public access log write routine
 	}
 
@@ -118,7 +142,7 @@ func Stop() {
 
 func Debug(v ...interface{}) {
 
-	if (! running){
+	if !running {
 		return
 	}
 
@@ -129,7 +153,7 @@ func Debug(v ...interface{}) {
 
 func Info(v ...interface{}) {
 
-	if (! running){
+	if !running {
 		return
 	}
 
@@ -140,7 +164,7 @@ func Info(v ...interface{}) {
 
 func Warn(v ...interface{}) {
 
-	if (! running){
+	if !running {
 		return
 	}
 
@@ -151,7 +175,7 @@ func Warn(v ...interface{}) {
 
 func Error(v ...interface{}) {
 
-	if (! running){
+	if !running {
 		return
 	}
 
@@ -162,7 +186,7 @@ func Error(v ...interface{}) {
 
 // Logs the message synchronously and terminates the app with exit code 1.
 func Fatal(v ...interface{}) {
-	if (! running){
+	if !running {
 		return
 	}
 
@@ -257,7 +281,7 @@ func publicAccessLogWrite(publicDataChannel chan string) {
 
 func doAppLogWrite(msg string) (err error) {
 
-	aRotateCounter ++
+	aRotateCounter++
 
 	if aRotateCounter <= 10 {
 		aRotateCounter = 0
@@ -287,7 +311,7 @@ func doAppLogWrite(msg string) (err error) {
 
 func doPublicAccessLogWrite(msg string) (err error) {
 
-	pRotateCounter ++
+	pRotateCounter++
 
 	if pRotateCounter <= 10 {
 		pRotateCounter = 0
@@ -320,7 +344,7 @@ func needRotation(f *os.File, maxSize int64) bool {
 	fileInfo, err := f.Stat()
 
 	if err != nil {
-		log.Println("ERROR - Unable to stat file " + f.Name(), err)
+		log.Println("ERROR - Unable to stat file "+f.Name(), err)
 		return false
 	}
 
@@ -338,7 +362,7 @@ func purgeFiles(folder string, suffix string, maxAge int) {
 		then := time.Now().AddDate(0, 0, 0-maxAge)
 		files, err := ioutil.ReadDir(folder)
 		if err != nil {
-			log.Println("ERROR: Purge routine unable to read directory [" + folder + "]", err)
+			log.Println("ERROR: Purge routine unable to read directory ["+folder+"]", err)
 		}
 		for _, f := range files {
 			if strings.HasSuffix(f.Name(), suffix) {
@@ -346,7 +370,7 @@ func purgeFiles(folder string, suffix string, maxAge int) {
 					path := folder + "/" + f.Name()
 					err := os.Remove(path)
 					if err != nil {
-						log.Println("ERROR: Purge routine unable to remove file [" + path + "]", err)
+						log.Println("ERROR: Purge routine unable to remove file ["+path+"]", err)
 					} else {
 						log.Println("Purge routine removed file [" + path + "]")
 					}
@@ -403,7 +427,7 @@ func rotate(folder string, fileName string, fileNumber *int) (logFile *os.File, 
 			rotated = true
 
 		} else if err != nil {
-			log.Println("Error while rotating, unable to stat [" + archiveFilePath + "]", err)
+			log.Println("Error while rotating, unable to stat ["+archiveFilePath+"]", err)
 			return nil, err
 		}
 		*fileNumber++
@@ -434,7 +458,7 @@ func decoratePublicAccessLogEntry(r http.Request, status int, contentLength int,
 
 	fromIp := r.Header.Get("X-Forwarded-For")
 
-	if (strings.TrimSpace(fromIp) == "") {
+	if strings.TrimSpace(fromIp) == "" {
 		fromIp = r.RemoteAddr
 	}
 

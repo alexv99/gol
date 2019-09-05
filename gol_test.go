@@ -1,15 +1,39 @@
+//
+// MIT License
+//
+// Copyright (c) 2017 Alex Vauthey
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+
 package gol
 
 import (
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
-	"sync"
-	"net/http"
 )
 
 func TestAppLogWrite(t *testing.T) {
@@ -18,7 +42,6 @@ func TestAppLogWrite(t *testing.T) {
 	SetAppLogFolder(".")
 	SetPublicLogFolder(".")
 	LogToStdout(false)
-
 
 	err := Start()
 
@@ -127,28 +150,28 @@ func TestPublicLogWrite(t *testing.T) {
 	url := "http://www.deal.com/abc?p=xys"
 	code := "200"
 
-	req , err := http.NewRequest(method , url, nil)
+	req, err := http.NewRequest(method, url, nil)
 
-	Public(*req,200, 10, 1*time.Millisecond)
+	Public(*req, 200, 10, 1*time.Millisecond)
 
 	path := "./access.log"
 
-	if !fileContains(path,method, t) {
+	if !fileContains(path, method, t) {
 		log.Println("Missing method from public access log entry")
 		t.FailNow()
 	}
 
-	if !fileContains(path,url, t) {
+	if !fileContains(path, url, t) {
 		log.Println("Missing URL from public access log entry")
 		t.FailNow()
 	}
 
-	if !fileContains(path,code, t) {
+	if !fileContains(path, code, t) {
 		log.Println("Missing http return code from public access log entry")
 		t.FailNow()
 	}
 
-	if !fileContains(path,"1ms", t) {
+	if !fileContains(path, "1ms", t) {
 		log.Println("Missing duration from public access log entry")
 		t.FailNow()
 	}
@@ -184,7 +207,7 @@ func TestAppLogRotate(t *testing.T) {
 		t.Fail()
 	}
 
-	for i :=0 ; i < 4; i++ {
+	for i := 0; i < 4; i++ {
 		path = "./" + time.Now().Local().Format("2006-01-02") + "-" + strconv.Itoa(i) + "-application.log"
 		if !fileExists(path, t) {
 			t.Fail()
@@ -209,7 +232,6 @@ func TestPublicLogRotate(t *testing.T) {
 
 	defer Stop()
 
-
 	SetAppLogLevel(INFO)
 	LogToStdout(false)
 
@@ -218,17 +240,16 @@ func TestPublicLogRotate(t *testing.T) {
 
 	for j := 0; j < 10000; j++ {
 		url := "http://www.deal.com/abc?p=xyz" + strconv.Itoa(j)
-		req , _ := http.NewRequest(method , url, nil )
+		req, _ := http.NewRequest(method, url, nil)
 		Public(*req, code, 10, 1*time.Millisecond)
 	}
-
 
 	path := "./access.log"
 	if !fileExists(path, t) {
 		t.Fail()
 	}
 
-	for i :=0 ; i < 4; i++ {
+	for i := 0; i < 4; i++ {
 		path = "./" + time.Now().Local().Format("2006-01-02") + "-" + strconv.Itoa(i) + "-access.log"
 		if !fileExists(path, t) {
 			t.Fail()
@@ -302,7 +323,7 @@ func TestPublicLogMultiThreaded(t *testing.T) {
 		wg.Add(1)
 		go func(j int) {
 			for k := 0; k < 100; k++ {
-				req , _ := http.NewRequest("GET" , "http://www.deal.com?i=" + strconv.Itoa(j) + "&j=" + strconv.Itoa(k), nil )
+				req, _ := http.NewRequest("GET", "http://www.deal.com?i="+strconv.Itoa(j)+"&j="+strconv.Itoa(k), nil)
 				Public(*req, 200, 10, 1*time.Millisecond)
 			}
 			wg.Done()
@@ -328,12 +349,12 @@ func removeLogFiles(path string, t *testing.T) {
 	files, err := ioutil.ReadDir(path)
 
 	if err != nil {
-		log.Println("Unable to read dir  " + path, err)
+		log.Println("Unable to read dir  "+path, err)
 		t.FailNow()
 	}
 
 	for _, f := range files {
-		if strings.HasSuffix(f.Name(),".log") {
+		if strings.HasSuffix(f.Name(), ".log") {
 			err := os.Remove(path + "/" + f.Name())
 			if err != nil {
 				t.Fatal("Unable to remove log files before test", err)
@@ -388,7 +409,7 @@ func filesContains(path string, s string, t *testing.T) bool {
 	files, err := ioutil.ReadDir(path)
 
 	if err != nil {
-		log.Println("Unable to read dir  " + path, err)
+		log.Println("Unable to read dir  "+path, err)
 		t.FailNow()
 	}
 
@@ -397,7 +418,7 @@ func filesContains(path string, s string, t *testing.T) bool {
 			b, err := ioutil.ReadFile(f.Name())
 
 			if err != nil {
-				log.Println("Unable to check file "+ f.Name() + " contains " + s, err)
+				log.Println("Unable to check file "+f.Name()+" contains "+s, err)
 				t.FailNow()
 			}
 
