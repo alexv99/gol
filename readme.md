@@ -1,5 +1,5 @@
 # gol
-Logging utility with a few goodies:
+Simple logging utility with a few goodies:
 <ul>
 <li/> Asynchronous (requests don't do disk IOs for logging)
 <li/> Log rotation (gol will create new log file once a configurable size is reached)
