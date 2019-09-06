@@ -25,8 +25,10 @@
 package gol
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -36,8 +38,14 @@ import (
 	"time"
 )
 
+func TestMain(m *testing.M) {
+	code := m.Run()
+	removeLogFiles(".")
+	os.Exit(code)
+}
+
 func TestAppLogWrite(t *testing.T) {
-	removeLogFiles(".", t)
+	removeLogFiles(".")
 
 	SetAppLogFolder(".")
 	SetPublicLogFolder(".")
@@ -46,7 +54,7 @@ func TestAppLogWrite(t *testing.T) {
 	err := Start()
 
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		t.Fatal()
 	}
 
@@ -132,7 +140,7 @@ func TestAppLogWrite(t *testing.T) {
 }
 
 func TestPublicLogWrite(t *testing.T) {
-	removeLogFiles(".", t)
+	removeLogFiles(".")
 
 	SetAppLogFolder(".")
 	SetPublicLogFolder(".")
@@ -142,7 +150,7 @@ func TestPublicLogWrite(t *testing.T) {
 	defer Stop()
 
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		t.Fatal()
 	}
 
@@ -157,38 +165,38 @@ func TestPublicLogWrite(t *testing.T) {
 	path := "./access.log"
 
 	if !fileContains(path, method, t) {
-		log.Println("Missing method from public access log entry")
+		fmt.Println("Missing method from public access log entry")
 		t.FailNow()
 	}
 
 	if !fileContains(path, url, t) {
-		log.Println("Missing URL from public access log entry")
+		fmt.Println("Missing URL from public access log entry")
 		t.FailNow()
 	}
 
 	if !fileContains(path, code, t) {
-		log.Println("Missing http return code from public access log entry")
+		fmt.Println("Missing http return code from public access log entry")
 		t.FailNow()
 	}
 
 	if !fileContains(path, "1ms", t) {
-		log.Println("Missing duration from public access log entry")
+		fmt.Println("Missing duration from public access log entry")
 		t.FailNow()
 	}
 }
 
 func TestAppLogRotate(t *testing.T) {
-	removeLogFiles(".", t)
+	removeLogFiles(".")
 
 	SetAppLogFolder(".")
 	SetPublicLogFolder(".")
-	SetAppLogMaxSize(100)
+	SetAppLogMaxSize(1)
 	LogToStdout(false)
 
 	err := Start()
 
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		t.Fatal()
 	}
 
@@ -199,7 +207,7 @@ func TestAppLogRotate(t *testing.T) {
 	SetAppLogLevel(INFO)
 	LogToStdout(false)
 
-	for j := 0; j < 50000; j++ {
+	for j := 0; j < 500; j++ {
 		Info("Hello " + strconv.Itoa(j))
 	}
 
@@ -216,17 +224,17 @@ func TestAppLogRotate(t *testing.T) {
 }
 
 func TestPublicLogRotate(t *testing.T) {
-	removeLogFiles(".", t)
+	removeLogFiles(".")
 
 	SetAppLogFolder(".")
 	SetPublicLogFolder(".")
-	SetPublicLogMaxSize(100)
+	SetPublicLogMaxSize(1)
 	LogToStdout(false)
 
 	err := Start()
 
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		t.Fatal()
 	}
 
@@ -238,7 +246,7 @@ func TestPublicLogRotate(t *testing.T) {
 	method := "GET"
 	code := 200
 
-	for j := 0; j < 10000; j++ {
+	for j := 0; j < 100; j++ {
 		url := "http://www.deal.com/abc?p=xyz" + strconv.Itoa(j)
 		req, _ := http.NewRequest(method, url, nil)
 		Public(*req, code, 10, 1*time.Millisecond)
@@ -259,16 +267,16 @@ func TestPublicLogRotate(t *testing.T) {
 
 func TestAppLogMultiThreaded(t *testing.T) {
 
-	removeLogFiles(".", t)
+	removeLogFiles(".")
 
 	SetAppLogFolder(".")
 	SetPublicLogFolder(".")
-	SetAppLogMaxSize(100)
+	SetAppLogMaxSize(1)
 
 	err := Start()
 
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		t.Fatal()
 	}
 
@@ -277,10 +285,12 @@ func TestAppLogMultiThreaded(t *testing.T) {
 
 	var wg sync.WaitGroup
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func(j int) {
-			for k := 0; k < 100; k++ {
+			for k := 0; k < 10; k++ {
+				r := rand.Intn(10)
+				time.Sleep(time.Duration(r) * time.Millisecond)
 				Info("Hello {" + strconv.Itoa(j) + "," + strconv.Itoa(k) + "}")
 			}
 			wg.Done()
@@ -290,11 +300,11 @@ func TestAppLogMultiThreaded(t *testing.T) {
 	wg.Wait()
 	Stop()
 
-	for i := 0; i < 100; i++ {
-		for j := 0; j < 100; j++ {
+	for i := 0; i < 10; i++ {
+		for j := 0; j < 10; j++ {
 			s := "{" + strconv.Itoa(i) + "," + strconv.Itoa(j) + "}"
 			if !filesContains(".", s, t) {
-				log.Println("Missing log record: " + s)
+				fmt.Println("Missing log record: " + s)
 				t.FailNow()
 			}
 		}
@@ -303,26 +313,28 @@ func TestAppLogMultiThreaded(t *testing.T) {
 
 func TestPublicLogMultiThreaded(t *testing.T) {
 
-	removeLogFiles(".", t)
+	removeLogFiles(".")
 
 	SetAppLogFolder(".")
 	SetPublicLogFolder(".")
-	SetPublicLogMaxSize(100)
+	SetPublicLogMaxSize(1)
 	LogToStdout(false)
 
 	err := Start()
 
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		t.Fatal()
 	}
 
 	var wg sync.WaitGroup
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func(j int) {
-			for k := 0; k < 100; k++ {
+			for k := 0; k < 10; k++ {
+				r := rand.Intn(10)
+				time.Sleep(time.Duration(r) * time.Millisecond)
 				req, _ := http.NewRequest("GET", "http://www.deal.com?i="+strconv.Itoa(j)+"&j="+strconv.Itoa(k), nil)
 				Public(*req, 200, 10, 1*time.Millisecond)
 			}
@@ -333,31 +345,30 @@ func TestPublicLogMultiThreaded(t *testing.T) {
 	wg.Wait()
 	Stop()
 
-	for i := 0; i < 100; i++ {
-		for j := 0; j < 100; j++ {
+	for i := 0; i < 10; i++ {
+		for j := 0; j < 10; j++ {
 			s := "http://www.deal.com?i=" + strconv.Itoa(i) + "&j=" + strconv.Itoa(j)
 			if !filesContains(".", s, t) {
-				log.Println("Missing log record: " + s)
+				fmt.Println("Missing log record: " + s)
 				t.FailNow()
 			}
 		}
 	}
 }
 
-func removeLogFiles(path string, t *testing.T) {
+func removeLogFiles(path string) {
 
 	files, err := ioutil.ReadDir(path)
 
 	if err != nil {
-		log.Println("Unable to read dir  "+path, err)
-		t.FailNow()
+		log.Fatal("Unable to read dir  "+path, err)
 	}
 
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), ".log") {
 			err := os.Remove(path + "/" + f.Name())
 			if err != nil {
-				t.Fatal("Unable to remove log files before test", err)
+				log.Fatal("Unable to remove log files before test", err)
 			}
 		}
 	}
@@ -389,7 +400,7 @@ func fileContains(path string, s string, t *testing.T) bool {
 			b, err := ioutil.ReadFile(path)
 
 			if err != nil {
-				log.Println("Unable to check file "+path+" contains "+s, err)
+				fmt.Println("Unable to check file "+path+" contains "+s, err)
 				t.FailNow()
 			}
 
@@ -409,7 +420,7 @@ func filesContains(path string, s string, t *testing.T) bool {
 	files, err := ioutil.ReadDir(path)
 
 	if err != nil {
-		log.Println("Unable to read dir  "+path, err)
+		fmt.Println("Unable to read dir  "+path, err)
 		t.FailNow()
 	}
 
@@ -418,7 +429,7 @@ func filesContains(path string, s string, t *testing.T) bool {
 			b, err := ioutil.ReadFile(f.Name())
 
 			if err != nil {
-				log.Println("Unable to check file "+f.Name()+" contains "+s, err)
+				fmt.Println("Unable to check file "+f.Name()+" contains "+s, err)
 				t.FailNow()
 			}
 
