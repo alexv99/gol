@@ -30,7 +30,7 @@ gol.Warn("my message")    // logs a warning message (async)
 gol.Error("my message")   // logs an error message (async)
 gol.Fatal("my message")   // *synchronously* logs a fatal message and exit with code 1
 
-go.Public(myRequest)  // Logs info about the http request and response (Apache web server style)
+gol.Public(myRequest)  // Logs info about the http request and response (Apache web server style)
 
 gol.Stop()  // stops gol (typically during graceful shutdown of the service.)
 ```
