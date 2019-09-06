@@ -57,7 +57,7 @@ var running bool = false
 
 var aLoglevel int = INFO           // Log level
 var aLogFolder string = "/var/log" // Path to gol file
-var aLogMaxSize int64 = 1024       // in MB
+var aLogMaxSize int64 = 1024       // in KB
 var aLogMaxAge int = 10            // File older than MaxAge days will be deleted automatically
 var aLogSuffix int = 0
 var aLogName = "application.log"
