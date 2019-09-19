@@ -1,4 +1,6 @@
 # gol
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/alexv99/gol/master/license.txt)
+
 Simple logging utility with a few goodies:
 <ul>
 <li/> Asynchronous (requests don't do disk IOs for logging)
