@@ -10,11 +10,9 @@ Simple logging utility with a few goodies:
 <li/> Easy interface for logging public access (a la Apache Web Server)
 </ul>
 
-Latest version: [v1.0.3](https://github.com/alexv99/gol/releases/tag/v1.0.3)
+Latest version: [v1.0.3](https://github.com/alexv99/gol/releases/tag/v1.0.3) (can be imported as a Go module)
 
 ## Usage
-
-Can be imported as a Go module :)
 
 ```
 import "github.com/deal/gol"
